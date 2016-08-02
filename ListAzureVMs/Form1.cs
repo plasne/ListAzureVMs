@@ -1,15 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using Microsoft.IdentityModel.Clients.ActiveDirectory;
 using System.Net;
 using System.Xml;
+using Microsoft.Azure.Management.Compute;
+using Microsoft.Azure.Management.Compute.Models;
 
 namespace ListAzureVMs
 {
@@ -80,7 +75,7 @@ namespace ListAzureVMs
             try
             {
                 AuthenticationContext context = new AuthenticationContext("https://login.windows.net/peterlasne.onmicrosoft.com");
-                ClientCredential credential = new ClientCredential("d6d95a58-78b3-412a-aa6c-3691cf328294", "ty4g4+av4h0iQ4EDT52hevSez9kPjSdkrfYFuECcvys=");
+                ClientCredential credential = new ClientCredential("d6d95a58-78b3-412a-aa6c-3691cf328294", "???????");
                 auth = await context.AcquireTokenAsync("https://management.core.windows.net/", credential);
                 toolStripStatusLabel1.Text = "Successfully logged in.";
             }
@@ -92,12 +87,15 @@ namespace ListAzureVMs
 
         private void armQuery_Click(object sender, EventArgs e)
         {
+            listResults.Items.Clear();
 
-            WebClient client = new WebClient();
-            client.Headers.Add("Authorization", "bearer " + auth.AccessToken);
-            string services = client.DownloadString("https://management.azure.com/subscriptions/fb0d9e18-712a-426f-ae67-1eac274bf9f1/providers/Microsoft.Authorization/roleAssignments?api-version=2015-07-01");
-            MessageBox.Show(services);
-
+            Microsoft.Azure.TokenCloudCredentials credential = new Microsoft.Azure.TokenCloudCredentials("fb0d9e18-712a-426f-ae67-1eac274bf9f1", auth.AccessToken);
+            ComputeManagementClient client = new ComputeManagementClient(credential);
+            VirtualMachineListResponse results = client.VirtualMachines.ListAll(null);
+            foreach (VirtualMachine vm in results.VirtualMachines)
+            {
+                listResults.Items.Add(vm.Name);
+            }
 
         }
 
