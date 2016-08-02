@@ -23,7 +23,7 @@ namespace ListAzureVMs
             InitializeComponent();
         }
 
-        private async void btnLogin_Click(object sender, EventArgs e)
+        private async void asmLogin_Click(object sender, EventArgs e)
         {
             try
             {
@@ -38,7 +38,7 @@ namespace ListAzureVMs
             }
         }
 
-        private void btnQuery_Click(object sender, EventArgs e)
+        private void asmQuery_Click(object sender, EventArgs e)
         {
             listResults.Items.Clear();
 
@@ -74,5 +74,33 @@ namespace ListAzureVMs
             toolStripStatusLabel1.Text = listResults.Items.Count + " classic VMs found.";
 
         }
+
+        private async void armLogin_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                AuthenticationContext context = new AuthenticationContext("https://login.windows.net/peterlasne.onmicrosoft.com");
+                ClientCredential credential = new ClientCredential("d6d95a58-78b3-412a-aa6c-3691cf328294", "ty4g4+av4h0iQ4EDT52hevSez9kPjSdkrfYFuECcvys=");
+                auth = await context.AcquireTokenAsync("https://management.core.windows.net/", credential);
+                toolStripStatusLabel1.Text = "Successfully logged in.";
+            }
+            catch (Exception ex)
+            {
+                toolStripStatusLabel1.Text = "Failed login: " + ex.Message;
+            }
+        }
+
+        private void armQuery_Click(object sender, EventArgs e)
+        {
+
+            WebClient client = new WebClient();
+            client.Headers.Add("Authorization", "bearer " + auth.AccessToken);
+            string services = client.DownloadString("https://management.azure.com/subscriptions/fb0d9e18-712a-426f-ae67-1eac274bf9f1/providers/Microsoft.Authorization/roleAssignments?api-version=2015-07-01");
+            MessageBox.Show(services);
+
+
+        }
+
+
     }
 }
