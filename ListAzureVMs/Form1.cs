@@ -75,7 +75,7 @@ namespace ListAzureVMs
             try
             {
                 AuthenticationContext context = new AuthenticationContext("https://login.windows.net/peterlasne.onmicrosoft.com");
-                ClientCredential credential = new ClientCredential("d6d95a58-78b3-412a-aa6c-3691cf328294", "???????");
+                ClientCredential credential = new ClientCredential("d6d95a58-78b3-412a-aa6c-3691cf328294", "?????");
                 auth = await context.AcquireTokenAsync("https://management.core.windows.net/", credential);
                 toolStripStatusLabel1.Text = "Successfully logged in.";
             }
@@ -95,6 +95,14 @@ namespace ListAzureVMs
             foreach (VirtualMachine vm in results.VirtualMachines)
             {
                 listResults.Items.Add(vm.Name);
+            }
+            while (results.NextLink != null)
+            {
+                results = client.VirtualMachines.ListNext(results.NextLink);
+                foreach (VirtualMachine vm in results.VirtualMachines)
+                {
+                    listResults.Items.Add(vm.Name);
+                }
             }
 
         }
