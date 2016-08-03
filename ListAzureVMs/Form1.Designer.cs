@@ -35,13 +35,15 @@
             this.toolStripStatusLabel1 = new System.Windows.Forms.ToolStripStatusLabel();
             this.armQuery = new System.Windows.Forms.Button();
             this.armLogin = new System.Windows.Forms.Button();
+            this.label1 = new System.Windows.Forms.Label();
+            this.label2 = new System.Windows.Forms.Label();
             this.statusStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
             // asmLogin
             // 
             this.asmLogin.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.asmLogin.Location = new System.Drawing.Point(996, 12);
+            this.asmLogin.Location = new System.Drawing.Point(996, 48);
             this.asmLogin.Name = "asmLogin";
             this.asmLogin.Size = new System.Drawing.Size(151, 73);
             this.asmLogin.TabIndex = 0;
@@ -52,7 +54,7 @@
             // asmQuery
             // 
             this.asmQuery.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.asmQuery.Location = new System.Drawing.Point(996, 100);
+            this.asmQuery.Location = new System.Drawing.Point(996, 136);
             this.asmQuery.Name = "asmQuery";
             this.asmQuery.Size = new System.Drawing.Size(151, 70);
             this.asmQuery.TabIndex = 1;
@@ -92,7 +94,7 @@
             // armQuery
             // 
             this.armQuery.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.armQuery.Location = new System.Drawing.Point(12, 100);
+            this.armQuery.Location = new System.Drawing.Point(12, 136);
             this.armQuery.Name = "armQuery";
             this.armQuery.Size = new System.Drawing.Size(151, 70);
             this.armQuery.TabIndex = 5;
@@ -103,7 +105,7 @@
             // armLogin
             // 
             this.armLogin.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.armLogin.Location = new System.Drawing.Point(12, 12);
+            this.armLogin.Location = new System.Drawing.Point(12, 48);
             this.armLogin.Name = "armLogin";
             this.armLogin.Size = new System.Drawing.Size(151, 73);
             this.armLogin.TabIndex = 4;
@@ -111,11 +113,31 @@
             this.armLogin.UseVisualStyleBackColor = true;
             this.armLogin.Click += new System.EventHandler(this.armLogin_Click);
             // 
+            // label1
+            // 
+            this.label1.AutoSize = true;
+            this.label1.Location = new System.Drawing.Point(13, 17);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(59, 25);
+            this.label1.TabIndex = 6;
+            this.label1.Text = "ARM";
+            // 
+            // label2
+            // 
+            this.label2.AutoSize = true;
+            this.label2.Location = new System.Drawing.Point(996, 17);
+            this.label2.Name = "label2";
+            this.label2.Size = new System.Drawing.Size(58, 25);
+            this.label2.TabIndex = 7;
+            this.label2.Text = "ASM";
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(12F, 25F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1159, 756);
+            this.Controls.Add(this.label2);
+            this.Controls.Add(this.label1);
             this.Controls.Add(this.armQuery);
             this.Controls.Add(this.armLogin);
             this.Controls.Add(this.statusStrip1);
@@ -140,6 +162,8 @@
         private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabel1;
         private System.Windows.Forms.Button armQuery;
         private System.Windows.Forms.Button armLogin;
+        private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.Label label2;
     }
 }
 

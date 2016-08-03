@@ -5,6 +5,10 @@ using System.Net;
 using System.Xml;
 using Microsoft.Azure.Management.Compute;
 using Microsoft.Azure.Management.Compute.Models;
+using Microsoft.Azure.Management.Network;
+using Microsoft.Azure.Management.Network.Models;
+using Microsoft.Rest.Azure;
+using System.Collections.Generic;
 
 namespace ListAzureVMs
 {
@@ -85,28 +89,95 @@ namespace ListAzureVMs
             }
         }
 
+        private class VM
+        {
+            public string name;
+            public string privateIp;
+            public string publicIp;
+        }
+
+        private VM Rebox(VirtualMachine vm, Dictionary<string, NetworkInterface> nicLookup, Dictionary<string, PublicIPAddress> publicIpLookup)
+        {
+            VM o = new VM() { name = vm.Name };
+            if (vm.NetworkProfile.NetworkInterfaces.Count > 0)
+            {
+                string nicId = vm.NetworkProfile.NetworkInterfaces[0].Id;
+                if (nicLookup.ContainsKey(nicId))
+                {
+                    NetworkInterface nic = nicLookup[nicId];
+                    o.privateIp = nic.IpConfigurations[0].PrivateIPAddress;
+                    string pipId = nic.IpConfigurations[0].PublicIPAddress.Id;
+                    if (publicIpLookup.ContainsKey(pipId))
+                    {
+                        PublicIPAddress pip = publicIpLookup[pipId];
+                        o.publicIp = pip.IpAddress;
+                    }
+                }
+            }
+            return o;
+        }
+
         private void armQuery_Click(object sender, EventArgs e)
         {
             listResults.Items.Clear();
 
-            Microsoft.Azure.TokenCloudCredentials credential = new Microsoft.Azure.TokenCloudCredentials("fb0d9e18-712a-426f-ae67-1eac274bf9f1", auth.AccessToken);
-            ComputeManagementClient client = new ComputeManagementClient(credential);
-            VirtualMachineListResponse results = client.VirtualMachines.ListAll(null);
-            foreach (VirtualMachine vm in results.VirtualMachines)
+            // convert the access token into a credential
+            Microsoft.Rest.TokenCredentials credential = new Microsoft.Rest.TokenCredentials(auth.AccessToken);
+
+            // create a network client
+            NetworkManagementClient networkClient = new NetworkManagementClient(credential) { SubscriptionId = "fb0d9e18-712a-426f-ae67-1eac274bf9f1" };
+
+            // read a list of all public IPs
+            IPage<PublicIPAddress> publicIps = networkClient.PublicIPAddresses.ListAll();
+            Dictionary<string, PublicIPAddress> publicIpLookup = new Dictionary<string, PublicIPAddress>();
+            foreach (PublicIPAddress publicIp in publicIps)
             {
-                listResults.Items.Add(vm.Name);
+                publicIpLookup.Add(publicIp.Id, publicIp);
             }
-            while (results.NextLink != null)
+            while (publicIps.NextPageLink != null)
             {
-                results = client.VirtualMachines.ListNext(results.NextLink);
-                foreach (VirtualMachine vm in results.VirtualMachines)
+                publicIps = networkClient.PublicIPAddresses.ListNext(publicIps.NextPageLink);
+                foreach (PublicIPAddress publicIp in publicIps)
                 {
-                    listResults.Items.Add(vm.Name);
+                    publicIpLookup.Add(publicIp.Id, publicIp);
+                }
+            }
+
+            // read a list of all NICs
+            IPage<NetworkInterface> nics = networkClient.NetworkInterfaces.ListAll();
+            Dictionary<string, NetworkInterface> nicLookup = new Dictionary<string, NetworkInterface>();
+            foreach (NetworkInterface nic in nics)
+            {
+                nicLookup.Add(nic.Id, nic);
+            }
+            while (nics.NextPageLink != null)
+            {
+                nics = networkClient.NetworkInterfaces.ListNext(nics.NextPageLink);
+                foreach (NetworkInterface nic in nics)
+                {
+                    nicLookup.Add(nic.Id, nic);
+                }
+            }
+
+            // read a list of all VMs
+            ComputeManagementClient computeClient = new ComputeManagementClient(credential) { SubscriptionId = "fb0d9e18-712a-426f-ae67-1eac274bf9f1" };
+            IPage<VirtualMachine> vms = computeClient.VirtualMachines.ListAll();
+            foreach (VirtualMachine vm in vms)
+            {
+                VM o = Rebox(vm, nicLookup, publicIpLookup);
+                if (o != null) listResults.Items.Add(o.name + ", " + o.privateIp + ", " + o.publicIp);
+            }
+            while (vms.NextPageLink != null)
+            {
+                vms = computeClient.VirtualMachines.ListNext(vms.NextPageLink);
+                foreach (VirtualMachine vm in vms)
+                {
+                    VM o = Rebox(vm, nicLookup, publicIpLookup);
+                    if (o != null) listResults.Items.Add(o.name + ", " + o.privateIp + ", " + o.publicIp);
                 }
             }
 
         }
-
 
     }
 }
