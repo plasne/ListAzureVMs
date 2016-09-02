@@ -79,7 +79,7 @@ namespace ListAzureVMs
             try
             {
                 AuthenticationContext context = new AuthenticationContext("https://login.windows.net/peterlasne.onmicrosoft.com");
-                ClientCredential credential = new ClientCredential("d6d95a58-78b3-412a-aa6c-3691cf328294", "?????");
+                ClientCredential credential = new ClientCredential("d6d95a58-78b3-412a-aa6c-3691cf328294", "ghM/cri4dy20tiUrIzIJNQj1qzs2a3Xr9ilensapWjI=");
                 auth = await context.AcquireTokenAsync("https://management.core.windows.net/", credential);
                 toolStripStatusLabel1.Text = "Successfully logged in.";
             }
@@ -94,11 +94,18 @@ namespace ListAzureVMs
             public string name;
             public string privateIp;
             public string publicIp;
+            public string powerState;
         }
 
         private VM Rebox(VirtualMachine vm, Dictionary<string, NetworkInterface> nicLookup, Dictionary<string, PublicIPAddress> publicIpLookup)
         {
             VM o = new VM() { name = vm.Name };
+            foreach(InstanceViewStatus status in vm.InstanceView.Statuses)
+            {
+                if (status.Code.StartsWith("PowerState/")) {
+                    o.powerState = status.Code.Replace("PowerState/", "");
+                }
+            }
             if (vm.NetworkProfile.NetworkInterfaces.Count > 0)
             {
                 string nicId = vm.NetworkProfile.NetworkInterfaces[0].Id;
@@ -164,16 +171,20 @@ namespace ListAzureVMs
             IPage<VirtualMachine> vms = computeClient.VirtualMachines.ListAll();
             foreach (VirtualMachine vm in vms)
             {
-                VM o = Rebox(vm, nicLookup, publicIpLookup);
-                if (o != null) listResults.Items.Add(o.name + ", " + o.privateIp + ", " + o.publicIp);
+                string resourceGroup = vm.Id.Split(new Char[] { '/' })[4];
+                VirtualMachine vmi = computeClient.VirtualMachines.Get(resourceGroup, vm.Name, InstanceViewTypes.InstanceView);
+                VM o = Rebox(vmi, nicLookup, publicIpLookup);
+                if (o != null) listResults.Items.Add(o.name + ", " + o.privateIp + ", " + o.publicIp + ", " + o.powerState);
             }
             while (vms.NextPageLink != null)
             {
                 vms = computeClient.VirtualMachines.ListNext(vms.NextPageLink);
                 foreach (VirtualMachine vm in vms)
                 {
-                    VM o = Rebox(vm, nicLookup, publicIpLookup);
-                    if (o != null) listResults.Items.Add(o.name + ", " + o.privateIp + ", " + o.publicIp);
+                    string resourceGroup = vm.Id.Split(new Char[] { '/' })[4];
+                    VirtualMachine vmi = computeClient.VirtualMachines.Get(resourceGroup, vm.Name, InstanceViewTypes.InstanceView);
+                    VM o = Rebox(vmi, nicLookup, publicIpLookup);
+                    if (o != null) listResults.Items.Add(o.name + ", " + o.privateIp + ", " + o.publicIp + ", " + o.powerState);
                 }
             }
 
